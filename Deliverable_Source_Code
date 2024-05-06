@@ -1,0 +1,118 @@
+# Source Code for COMP_5393_Capstone Project_FinalProjectReport_NetworkSecurityAssessment_Mozpay_Suzun #
+#
+# for this project we installed virtual machines on vmware workstaiton we have some codes when we setup the machines.
+
+# First one is splunk installation code for Splunk server and splunk universal installer.
+
+#______________________________________________________________________________________________________________________
+# SPLUNK SERVER INSTALLATION SCRIPT
+# PRE INSTALLATION
+yum update -y
+yum install -y expect
+hostnamectl set-hostname splunkforwarder.example.com
+firewall-cmd --permanent --add-port=8000/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=5514/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+
+firewall-cmd --permanent --add-port=8000/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=80/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=443/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8443/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=514/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=514/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8088/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+
+systemctl disable firewalld.service --now
+sudo sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+sudo useradd -d /opt/splunk -m -g splunk splunk
+reboot
+
+# DOWNLOAD
+wget -O splunk-9.2.1-78803f08aabb.x86_64.rpm "https://download.splunk.com/products/splunk/releases/9.2.1/linux/splunk-9.2.1-78803f08aabb.x86_64.rpm"
+
+# INSTALL RPM PACKAGE
+rpm -i splunk-9.2.1-78803f08aabb.x86_64.rpm
+chown -R splunk: /opt/splunk/
+
+# START AND ENABLE SERVICE
+sudo /opt/splunk/bin/splunk start --accept-license
+sudo /opt/splunk/bin/splunk enable boot-start
+sudo /opt/splunk/bin/splunk status
+firefox https://localhost:8000
+
+### for all
+#go to web interface settings and go forwarding and receiving then configure receiving --> new receiving port 9997 save exit
+#go to settings then indexes --> new index c7forwarderlog save
+
+#______________________________________________________________________________________________________________________
+
+# SPLUNK UNIVERAL FORWARDER INSTALLATION SCRIPT
+
+# PRE INSTALLATION
+yum update -y
+yum install -y expect
+hostnamectl set-hostname splunkforwarder.example.com
+firewall-cmd --permanent --add-port=8000/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=5514/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8000/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=80/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=443/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8443/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=9997/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=514/tcp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=514/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8088/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+firewall-cmd --permanent --add-port=8089/udp ; firewall-cmd --reload ; firewall-cmd --list-all
+systemctl disable firewalld.service --now
+sudo sed -i 's/^SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+reboot
+
+# DOWNLOAD
+wget -O splunkforwarder-9.2.1-78803f08aabb.x86_64.rpm "https://download.splunk.com/products/universalforwarder/releases/9.2.1/linux/splunkforwarder-9.2.1-78803f08aabb.x86_64.rpm"
+
+# INSTALL RPM PACKAGE
+rpm -i splunkforwarder-9.2.1-78803f08aabb.x86_64.rpm
+
+# START AND ENABLE SERVICE
+sudo /opt/splunkforwarder/bin/splunk start --accept-license
+sudo /opt/splunkforwarder/bin/splunk enable boot-start
+sudo /opt/splunkforwarder/bin/splunk status
+/opt/splunkforwarder/bin/splunk add forward-server 192.168.101.162:9997
+
+/opt/splunkforwarder/bin/splunk add forward-server 192.168.231.134:9997
+
+sudo /opt/splunkforwarder/bin/splunk restart
+sudo /opt/splunkforwarder/bin/splunk add monitor /var/log
+
+
+#WINDOWS
+
+# after installation
+# go to splunk etc apps splunkuniversalforwarder local inputs after each event log put index= name of the index given in server
+# then etc system local outputs check the server ip and port it is udp port
+# then check the firewall rules open port desired and assigned
+# last restart the service splunk forwarder
+
+#_______________________________________________________________________________________________________________________
+
+# KALI LINUX COMMANDS
+
+# to ping a specific ip
+ping 192.168.1.10
+
+# to ping a range
+ping 192.168.1.0/24
+
+# to make a nmap scan/port scan
+nmap 192.168.1.10
+
+#
